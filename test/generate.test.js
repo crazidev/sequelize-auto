@@ -208,7 +208,7 @@ describe(helpers.getTestDialectTeaser('sequelize-auto generate'), function() {
         const databaseMajorVersion = +((self.sequelize.options.databaseVersion || '').split('.')[0]);
         expect(dateDefault).to.be.equal(dialect == 'mssql' ? '{"fn":"getdate","args":[]}' : 
           (dialect == 'postgres' && databaseMajorVersion < 10) ? '{"fn":"now","args":[]}' :
-          '{"val":"CURRENT_TIMESTAMP"}');
+          '{"fn":"current_timestamp","args":[]}');
         done();
       } catch (err) {
         console.log('Failed to load Users model:', err);

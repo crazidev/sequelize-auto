@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const { describe, it } = require('mocha');
-const { recase } = require('../lib/types');
+const { recase } = require('../lib/src/types');
 
 describe('sequelize-auto types', function() {
   it('recase kebab-case', function() {

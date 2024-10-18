@@ -1,8 +1,8 @@
 const fs = require('fs');
 const { describe, before, after, it } = require('mocha');
 const { expect } = require('chai');
-const { AutoRelater } = require('../lib/auto-relater');
-const { SequelizeAuto } = require('../lib/auto');
+const { AutoRelater } = require('../lib/src/auto-relater');
+const { SequelizeAuto } = require('../lib/src/auto');
 const buildTableData = require('./tabledata').buildRelatedTableData;
 
 describe("sequelize-auto writer", function() {
@@ -18,6 +18,7 @@ describe("sequelize-auto writer", function() {
       caseFile: 'l',
       caseProp: 'c',
       singularize: false,
+      version: 'v7'
     }
     // we've already done the build and relate steps, so we just need to write 
     let auto = new SequelizeAuto(null, null, null, options);

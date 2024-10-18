@@ -1,4 +1,4 @@
-const { AutoRelater } = require('../lib/auto-relater');
+const { AutoRelater } = require('../lib/src/auto-relater');
 
 // Data from mysql version of Northwind sample, with some additional relationships.
 const northwindTableData = { 

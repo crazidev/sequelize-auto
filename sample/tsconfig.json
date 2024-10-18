@@ -4,13 +4,14 @@
     "checkJs": false,
     "strict": true,
     "declaration": false,
-    "module": "commonjs",
+    "module": "nodenext",
     "noImplicitAny": true,
     "esModuleInterop": true,
     "preserveConstEnums": true,
     "removeComments": false,
     "sourceMap": true,
     "target": "ES6",
+    "moduleResolution": "nodenext",
     "skipLibCheck": true,
     "typeRoots": [
       "node_modules/@types"

@@ -10,4 +10,7 @@ auto.run().then(data => {
   console.log(tableNames);      // table list
   // console.log(data.foreignKeys); // foreign key list
   // console.log(data.text)         // text of generated files
+  console.log(config.autoOptions);
 });
+
+

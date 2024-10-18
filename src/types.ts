@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { check as isReserved } from "reserved-words";
 import { Utils } from "sequelize";
-import { ColumnDescription, Dialect } from "sequelize/types";
+import { ColumnDescription, Dialect } from "sequelize";
 import { FKSpec } from "./dialects/dialect-options";
 
 export interface Table {
@@ -185,6 +185,8 @@ export interface AutoOptions {
   pkSuffixes?: string[];
   /** Use `sequelize.define` instead of `init` for model initialization.  See issues #527, #559, #573 */
   useDefine: boolean;
+  /** Sequelize model version */
+  version?: 'v6' | 'v7';
 }
 
 export type TSField = { special: string[]; elementType: string; } & ColumnDescription;

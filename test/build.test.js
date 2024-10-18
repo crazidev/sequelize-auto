@@ -30,7 +30,8 @@ describe(helpers.getTestDialectTeaser("sequelize-auto build"), function() {
       dialect: helpers.getTestDialect(),
       views: helpers.views,
       caseModel: isSnakeTables ? 'p' : undefined,
-      caseProp: isSnakeTables ? 'p' : undefined 
+      caseProp: isSnakeTables ? 'p' : undefined,
+      version: "v7"
     }, testConfig[helpers.getTestDialect()], self.sequelize.config);
 
     var auto = new SequelizeAuto(self.sequelize.config.database, self.sequelize.config.username, self.sequelize.config.password, options);

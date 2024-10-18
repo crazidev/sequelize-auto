@@ -1,17 +1,28 @@
 const path = require('path');
-const output = path.join(__dirname, "./models");
-const options = { directory: output, caseFile: 'l', caseModel: 'p', caseProp: 'c', lang: 'ts', useDefine: false, singularize: true, spaces: true, indentation: 2 };
+const output = path.join(__dirname, './models');
+const options = {
+  directory: output,
+  caseFile: 'l',
+  caseModel: 'p',
+  caseProp: 'u',
+  lang: 'ts',
+  useDefine: false,
+  singularize: true,
+  spaces: true,
+  indentation: 2,
+  version: 'v7',
+};
 
 // Edit the configuration below for your database dialect
 
 // sqlite
-const storage = path.join(__dirname, "./northwind.sqlite");
+const storage = path.join(__dirname, './northwind.sqlite');
 const sqlite = {
   dbname: 'northwind',
   user: '',
   pass: '',
   options: { dialect: 'sqlite', storage: storage },
-  autoOptions: { dialect: 'sqlite', storage: storage, ...options }
+  autoOptions: { dialect: 'sqlite', storage: storage, ...options },
 };
 
 // mssql
@@ -20,26 +31,26 @@ const mssql = {
   user: 'mssql',
   pass: 'mssql',
   options: { dialect: 'mssql' },
-  autoOptions: { dialect: 'mssql', ...options }
+  autoOptions: { dialect: 'mssql', ...options },
 };
 
 // mysql
 const mysql = {
-  dbname: 'northwind',
-  user: 'mysql',
-  pass: 'mysql',
+  dbname: 'afrikmart',
+  user: 'root',
+  pass: '',
   options: { dialect: 'mysql' },
-  autoOptions: { dialect: 'mysql', ...options }
+  autoOptions: { dialect: 'mysql', ...options },
 };
 
 // postgres
 const postgres = {
-  dbname: 'Northwind',
+  dbname: 'postgres',
   user: 'postgres',
-  pass: 'postgres',
+  pass: '4663789',
   options: { dialect: 'postgres' },
-  autoOptions: { dialect: 'postgres', ...options }
+  autoOptions: { dialect: 'postgres', ...options },
 };
 
 // Change to export appropriate config for your database
-module.exports = sqlite;
+module.exports = mysql;

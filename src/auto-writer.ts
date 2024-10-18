@@ -117,6 +117,8 @@ export class AutoWriter {
         const hAlias = this.options.noAlias ? '' : `as: "${asChildProp}", `;
         strBelongs += `${sp}${rel.parentModel}.${hasRel}(${rel.childModel}, { ${hAlias}foreignKey: "${rel.parentId}"});\n`;
       }
+
+     
     });
 
     // belongsToMany must come first
@@ -133,28 +135,28 @@ export class AutoWriter {
       const fileName = recase(this.options.caseFile, t, this.options.singularize);
       const modelName = makeTableName(this.options.caseModel, t, this.options.singularize, this.options.lang);
       modelNames.push(modelName);
-      str += `import { ${modelName} as _${modelName} } from "./${fileName}";\n`;
-      str += `import type { ${modelName}Attributes, ${modelName}CreationAttributes } from "./${fileName}";\n`;
+      str += `import { ${modelName} } from "./${fileName}";\n`;
+      // str += `import type { ${modelName}Attributes, ${modelName}CreationAttributes } from "./${fileName}";\n`;
     });
     // re-export the model classes
     str += '\nexport {\n';
     modelNames.forEach(m => {
-      str += `${sp}_${m} as ${m},\n`;
+      str += `${sp}${m},\n`;
     });
     str += '};\n';
 
     // re-export the model attirbutes
-    str += '\nexport type {\n';
-    modelNames.forEach(m => {
-      str += `${sp}${m}Attributes,\n`;
-      str += `${sp}${m}CreationAttributes,\n`;
-    });
-    str += '};\n\n';
+    // str += '\nexport type {\n';
+    // modelNames.forEach(m => {
+    //   str += `${sp}${m}Attributes,\n`;
+    //   str += `${sp}${m}CreationAttributes,\n`;
+    // });
+    // str += '};\n\n';
 
     // create the initialization function
     str += 'export function initModels(sequelize: Sequelize) {\n';
     modelNames.forEach(m => {
-      str += `${sp}const ${m} = _${m}.initModel(sequelize);\n`;
+      str += `${sp}${m}.initModel(sequelize);\n`;
     });
 
     // add the asociations
