@@ -163,15 +163,14 @@ export class AutoWriter {
       str += 'export function initModels() {\n';
     }
 
-    // add the asociations
-    str += '\n' + assoc;
-    str += '\n';
-
     if (this.options.version === 'v6') {
       // create the initialization function
       modelNames.forEach((m) => {
         str += `${sp}${m}.initModel(sequelize);\n`;
       });
+
+      // add the asociations
+      str += '\n' + assoc;
 
       // return the models
       str += `\n${sp}return {\n`;
@@ -197,6 +196,7 @@ export class AutoWriter {
       const modelName = makeTableName(this.options.caseModel, t, this.options.singularize, this.options.lang);
       modelNames.push(modelName);
     });
+    
     // return the models
     str += `${sp}return [\n`;
     modelNames.forEach((m) => {
@@ -223,7 +223,7 @@ export class AutoWriter {
     // create the initialization function
     str += '\nfunction initModels(sequelize) {\n';
     modelNames.forEach((m) => {
-      str += `${sp}${vardef} ${m} = _${m}(sequelize, DataTypes);\n`;
+      str += `${sp}${vardef} ${m} = new _${m}(sequelize);\n`;
     });
 
     // add the asociations
@@ -253,12 +253,12 @@ export class AutoWriter {
       const fileName = recase(this.options.caseFile, t, this.options.singularize);
       const modelName = makeTableName(this.options.caseModel, t, this.options.singularize, this.options.lang);
       modelNames.push(modelName);
-      str += `import _${modelName} from  "./${fileName}.js";\n`;
+      str += `import ${modelName} from  "./${fileName}.js";\n`;
     });
     // create the initialization function
-    str += '\nexport default function initModels(sequelize) {\n';
+    str += '\nexport function initModels(sequelize) {\n';
     modelNames.forEach((m) => {
-      str += `${sp}const ${m} = _${m}.init(sequelize, DataTypes);\n`;
+      str += `${sp}${m}.init(sequelize);\n`;
     });
 
     // add the associations

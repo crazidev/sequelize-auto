@@ -118,7 +118,7 @@ export class AutoGenerator {
           const set = associations.needed[fkTable];
           const [fkSchema, fkTableName] = qNameSplit(fkTable);
           const filename = recase(this.options.caseFile, fkTableName, this.options.singularize);
-          str += `import ${this.options.lang === 'ts' ? 'type' : ''} { `;
+          str += `import ${this.options.lang === 'ts' ? '' : ''} { `;
           str += Array.from(set.values()).sort().join(', ');
           str += ` } from './${filename}${this.options.lang === 'ts' ? '' : '.js'}';\n`;
         });
@@ -163,8 +163,8 @@ export class AutoGenerator {
           str += '\n';
           str += this.space[1] + 'static initModel(sequelize: Sequelize.Sequelize): typeof #TABLE# {\n';
         } else {
-          if(this.options.lang !== 'es5') {
-            str += "export ";
+          if (this.options.lang !== 'es5') {
+            str += 'export ';
           }
           str += 'class #TABLE# extends Model {\n';
           str += this.space[1] + 'static initModel(sequelize) {\n';
@@ -206,8 +206,8 @@ export class AutoGenerator {
         str += '}\n';
       }
 
-      if(this.options.lang === "es5"){
-        str += "module.exports = #TABLE#;";
+      if (this.options.lang === 'es5') {
+        str += 'module.exports = #TABLE#;';
       }
 
       const re = new RegExp('#TABLE#', 'g');
@@ -757,20 +757,20 @@ export class AutoGenerator {
           // current table is a child that belongsTo parent
           const pparent = _.upperFirst(rel.parentProp);
           str += `${sp}// ${rel.childModel} belongsTo ${rel.parentModel} via ${rel.parentId}\n`;
-          // if (this.options.version === 'v6') {
-          str += `${sp}declare ${rel.parentProp}?: ${rel.parentModel};\n`;
+          if (this.options.version === 'v7') {
+            str +=
+              sp +
+              `@BelongsTo(() => ${rel.parentModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${
+                rel.parentProp
+              }', type: '${rel.isOne ? 'hasOne' : 'hasMany'}' }})\n`;
+            str += sp + `declare ${rel.parentProp}?: NonAttribute<${rel.parentModel}>\n\n`;
+          } else {
+            str += `${sp}declare ${rel.parentProp}?: ${rel.parentModel};\n`;
+          }
           str += `${sp}declare get${pparent}: Sequelize.BelongsToGetAssociationMixin<${rel.parentModel}>;\n`;
           str += `${sp}declare set${pparent}: Sequelize.BelongsToSetAssociationMixin<${rel.parentModel}, number>;\n`;
           str += `${sp}declare create${pparent}: Sequelize.BelongsToCreateAssociationMixin<${rel.parentModel}>;\n\n`;
-          // } else {
-          //   str +=
-          //     sp +
-          //     `@BelongsTo(() => ${rel.parentModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${
-          //       rel.parentProp
-          //     }', type: '${rel.isOne ? 'hasOne' : 'hasMany'}' }})\n`;
-          //   str += sp + `declare ${rel.parentProp}?: NonAttribute<${rel.parentModel}>\n\n`;
-          // }
-
+          
           needed[rel.parentTable] ??= new Set();
           needed[rel.parentTable].add(rel.parentModel);
         } else if (rel.parentTable === table) {
@@ -779,17 +779,18 @@ export class AutoGenerator {
           if (rel.isOne) {
             // const hasModelSingular = singularize(hasModel);
             str += `${sp}// ${rel.parentModel} hasOne ${rel.childModel} via ${rel.parentId}\n`;
-            // if (this.options.version === 'v6') {
-            str += `${sp}declare ${rel.childProp}?: ${rel.parentId};\n`;
+            if (this.options.version === 'v7') {
+              str +=
+                sp +
+                `@HasOne(() => ${rel.childModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${rel.childProp}' }})\n`;
+              str += sp + `declare ${rel.childProp}?: NonAttribute<${rel.childModel}>\n\n`;
+            } else {
+              str += `${sp}declare ${rel.childProp}?: ${rel.parentId};\n`;
+            }
             str += `${sp}declare get${pchild}: Sequelize.HasOneGetAssociationMixin<${rel.childModel}>;\n`;
             str += `${sp}declare set${pchild}: Sequelize.HasOneSetAssociationMixin<${rel.childModel}, number>;\n`;
             str += `${sp}declare create${pchild}: Sequelize.HasOneCreateAssociationMixin<${rel.childModel}>;\n`;
-            // } else {
-            //   str +=
-            //     sp +
-            //     `@HasOne(() => ${rel.childModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${rel.childProp}' }})\n`;
-            //   str += sp + `declare ${rel.childProp}?: NonAttribute<${rel.childModel}>\n\n`;
-            // }
+            
 
             needed[rel.childTable].add(rel.childModel);
           } else {
@@ -798,8 +799,14 @@ export class AutoGenerator {
             const lur = pluralize(rel.childProp);
             const plur = _.upperFirst(lur);
             str += `${sp}// ${rel.parentModel} hasMany ${rel.childModel} via ${rel.parentId}\n`;
-            // if (this.options.version === 'v6') {
-            str += `${sp}declare ${lur}: Sequelize.NonAttribute<${rel.childModel}[]>;\n`;
+            if (this.options.version === 'v7') {
+              str +=
+                sp +
+                `@HasMany(() => ${rel.childModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${rel.childProp}' } })\n`;
+              str += sp + `declare ${rel.childProp}?: NonAttribute<${rel.childModel}[]>\n\n`;
+            } else {
+               str += `${sp}declare ${lur}: Sequelize.NonAttribute<${rel.childModel}[]>;\n`;
+            }
             str += `${sp}declare get${plur}: Sequelize.HasManyGetAssociationsMixin<${hasModel}>;\n`;
             str += `${sp}declare set${plur}: Sequelize.HasManySetAssociationsMixin<${hasModel}, number>;\n`;
             str += `${sp}declare add${sing}: Sequelize.HasManyAddAssociationMixin<${hasModel}, number>;\n`;
@@ -812,12 +819,7 @@ export class AutoGenerator {
             str += `${sp}declare count${plur}: Sequelize.HasManyCountAssociationsMixin${
               this.options.version === 'v7' ? `<${hasModel}>` : ''
             };\n\n`;
-            // } else {
-            //   str +=
-            //     sp +
-            //     `@HasMany(() => ${rel.childModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${rel.childProp}' } })\n`;
-            //   str += sp + `declare ${rel.childProp}?: NonAttribute<${rel.childModel}[]>\n\n`;
-            // }
+           
             needed[rel.childTable].add(hasModel);
           }
         }
@@ -834,8 +836,12 @@ export class AutoGenerator {
           const otherTable = isParent ? rel.childTable : rel.parentTable;
           str += `${sp}// ${thisModel} belongsToMany ${otherModel} via ${rel.parentId} and ${rel.childId}\n`;
 
-          // if (this.options.version === 'v6') {
-          str += `${sp}declare ${lotherModelPlural}: ${otherModel}[];\n`;
+          if (this.options.version === 'v7') {
+            str += `${sp}@BelongsToMany(() => ${otherModel}, { through: ()=> ${rel.joinModel}, foreignKey: '${rel.parentId}', inverse:  { as: '${rel.childProp}'}, otherKey: '${rel.childId}', })\n`;
+            str += sp + `declare ${rel.childProp}?: NonAttribute<${otherModel}[]>\n\n`;
+          } else {
+            str += `${sp}declare ${lotherModelPlural}: ${otherModel}[];\n`;
+          }
           str += `${sp}declare get${otherModelPlural}: Sequelize.BelongsToManyGetAssociationsMixin<${otherModel}>;\n`;
           str += `${sp}declare set${otherModelPlural}: Sequelize.BelongsToManySetAssociationsMixin<${otherModel}, number>;\n`;
           str += `${sp}declare add${otherModelSingular}: Sequelize.BelongsToManyAddAssociationMixin<${otherModel}, number>;\n`;
@@ -848,10 +854,7 @@ export class AutoGenerator {
           str += `${sp}declare count${otherModelPlural}: Sequelize.BelongsToManyCountAssociationsMixin${
             this.options.version === 'v7' ? `<${otherModel}>` : ''
           };\n`;
-          // } else {
-          //   str += `${sp}@BelongsToMany(() => ${otherModel}, { through: ()=> ${rel.joinModel}, foreignKey: '${rel.parentId}', inverse:  { as: '${rel.childProp}'}, otherKey: '${rel.childId}', })\n`;
-          //   str += sp + `declare ${rel.childProp}?: NonAttribute<${otherModel}[]>\n\n`;
-          // }
+        
           needed[otherTable] ??= new Set();
           needed[otherTable].add(otherModel);
         }

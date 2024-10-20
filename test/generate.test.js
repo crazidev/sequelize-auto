@@ -16,7 +16,7 @@ describe(helpers.getTestDialectTeaser('sequelize-auto generate'), function() {
   self.timeout(10000);
 
   after(function(done) {
-    // helpers.clearDatabase(self.sequelize, done, true);
+    helpers.clearDatabase(self.sequelize, done, true);
   });
 
   before(function(done) {
@@ -45,7 +45,6 @@ describe(helpers.getTestDialectTeaser('sequelize-auto generate'), function() {
         execString += ' -v'; // test view generation
       }
       // execString += ' -l es6'; // uncomment to test es6 file generation
-      // execString += ' -l esm'; 
       if (helpers.isSnakeTables()) {
         execString += ' --cm p --cf p'; // test PascalCase conversion from snake_case tables
       }

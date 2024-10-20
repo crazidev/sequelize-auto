@@ -5,12 +5,13 @@ const options = {
   caseFile: 'l',
   caseModel: 'p',
   caseProp: 'o',
-  lang: 'esm',
+  lang: 'ts',
   useDefine: false,
   singularize: true,
   spaces: true,
+  noAlias: true,
   indentation: 2,
-  version: 'v7',
+  version: 'v6',
 };
 
 // Edit the configuration below for your database dialect
