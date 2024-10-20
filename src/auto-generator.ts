@@ -67,38 +67,31 @@ export class AutoGenerator {
         header += "import * as Sequelize from 'sequelize';\n";
         header += "import { DataTypes, Model, Optional } from 'sequelize';\n";
       } else {
-        header +=
-          "import { Sequelize, DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional, NonAttribute } from '@sequelize/core';\n";
-        header +=
-          "import { Attribute, PrimaryKey, AutoIncrement, ColumnName, NotNull, Default, Table, Unique, Comment, BelongsToMany, BelongsTo, HasMany, HasOne } from '@sequelize/core/decorators-legacy';\n\n";
+        header += this.makeHeaderImportV7();
       }
-    } else if (this.options.lang === 'es6') {
-      header += "const Sequelize = require('sequelize');\n";
-      header += 'module.exports = (sequelize, DataTypes) => {\n';
-      header += sp + 'return #TABLE#.init(sequelize, DataTypes);\n';
-      header += '}\n\n';
-      header += 'class #TABLE# extends Sequelize.Model {\n';
-      header += sp + 'static init(sequelize, DataTypes) {\n';
-      if (this.options.useDefine) {
-        header += sp + "return sequelize.define('#TABLE#', {\n";
+    } else if (this.options.lang === 'es5') {
+      if (this.options.version == 'v6') {
+        header += "const { Sequelize, DataTypes, Model } = require('sequelize');\n";
       } else {
-        header += sp + 'return super.init({\n';
-      }
-    } else if (this.options.lang === 'esm') {
-      header += "import _sequelize from 'sequelize';\n";
-      header += 'const { Model, Sequelize } = _sequelize;\n\n';
-      header += 'export default class #TABLE# extends Model {\n';
-      header += sp + 'static init(sequelize, DataTypes) {\n';
-      if (this.options.useDefine) {
-        header += sp + "return sequelize.define('#TABLE#', {\n";
-      } else {
-        header += sp + 'return super.init({\n';
+        header += this.makeHeaderImportV7();
       }
     } else {
-      header += "const Sequelize = require('sequelize');\n";
-      header += 'module.exports = function(sequelize, DataTypes) {\n';
-      header += sp + "return sequelize.define('#TABLE#', {\n";
+      header += "import _sequelize from 'sequelize';\n";
+      header += 'const { Model, Sequelize, DataTypes } = _sequelize;\n\n';
     }
+    return header;
+  }
+
+  /// Generate import header for sequelize version 7 ESM
+  makeHeaderImportV7() {
+    var header = '';
+    header += "import * as Sequelize from '@sequelize/core';\n";
+    header += "import { DataTypes, Model, InferAttributes, InferCreationAttributes } from '@sequelize/core';\n";
+    header += `import ${
+      this.options.lang === 'ts' ? 'type ' : ''
+    }{ CreationOptional, NonAttribute } from '@sequelize/core';\n`;
+    header +=
+      "import { Attribute, PrimaryKey, AutoIncrement, ColumnName, NotNull, Default, Table, Unique, Comment, BelongsToMany, BelongsTo, HasMany, HasOne } from '@sequelize/core/decorators-legacy';\n\n";
     return header;
   }
 
@@ -118,64 +111,76 @@ export class AutoGenerator {
         this.options.lang
       );
 
-      if (this.options.lang === 'ts') {
-        const associations = this.addTypeScriptAssociationMixins(table);
+      const associations = this.addTypeScriptAssociationMixins(table);
+      if (this.options.lang == 'ts') {
         const needed = _.keys(associations.needed).sort();
         needed.forEach((fkTable) => {
           const set = associations.needed[fkTable];
           const [fkSchema, fkTableName] = qNameSplit(fkTable);
           const filename = recase(this.options.caseFile, fkTableName, this.options.singularize);
-          if (this.options.version == 'v6') {
-            str += 'import type { ';
-            str += Array.from(set.values()).sort().join(', ');
-          } else {
-            str += 'import { ';
-            str += Array.from(set.values()).at(0);
-          }
-          str += ` } from './${filename}';\n`;
+          str += `import ${this.options.lang === 'ts' ? 'type' : ''} { `;
+          str += Array.from(set.values()).sort().join(', ');
+          str += ` } from './${filename}${this.options.lang === 'ts' ? '' : '.js'}';\n`;
         });
+      }
 
-        str += '\n';
+      str += '\n';
 
-        if (this.options.version === 'v6') {
-          str += '\nexport interface #TABLE#Attributes {\n';
-          str += this.addTypeScriptFields(table, true) + '}\n\n';
+      if (this.options.version === 'v6') {
+        // str += this.space[2] + 'User.init({\n';
+        // static initModel(sequelize: Sequelize): typeof Salary {
+        // Salary.init({
 
-          const primaryKeys = this.getTypeScriptPrimaryKeys(table);
+        // if (this.options.lang === 'ts') {
+        //   str += '\nexport interface #TABLE#Attributes {\n';
+        //   str += this.addTypeScriptFields(table, true) + '}\n\n';
+        // }
 
-          if (primaryKeys.length) {
-            str += `export type #TABLE#Pk = ${primaryKeys
-              .map((k) => `"${recase(this.options.caseProp, k)}"`)
-              .join(' | ')};\n`;
-            str += `export type #TABLE#Id = #TABLE#[#TABLE#Pk];\n`;
-          }
+        // const primaryKeys = this.getTypeScriptPrimaryKeys(table);
 
-          const creationOptionalFields = this.getTypeScriptCreationOptionalFields(table);
+        // if (primaryKeys.length) {
+        //   str += `export type #TABLE#Pk = ${primaryKeys
+        //     .map((k) => `"${recase(this.options.caseProp, k)}"`)
+        //     .join(' | ')};\n`;
+        //   str += `export type #TABLE#Id = #TABLE#[#TABLE#Pk];\n`;
+        // }
 
-          if (creationOptionalFields.length) {
-            str += `export type #TABLE#OptionalAttributes = ${creationOptionalFields
-              .map((k) => `"${recase(this.options.caseProp, k)}"`)
-              .join(' | ')};\n`;
-            str +=
-              'export type #TABLE#CreationAttributes = Optional<#TABLE#Attributes, #TABLE#OptionalAttributes>;\n\n';
-          } else {
-            str += 'export type #TABLE#CreationAttributes = #TABLE#Attributes;\n\n';
-          }
+        // const creationOptionalFields = this.getTypeScriptCreationOptionalFields(table);
 
+        // if (creationOptionalFields.length) {
+        //   str += `export type #TABLE#OptionalAttributes = ${creationOptionalFields
+        //     .map((k) => `"${recase(this.options.caseProp, k)}"`)
+        //     .join(' | ')};\n`;
+        //   str += 'export type #TABLE#CreationAttributes = Optional<#TABLE#Attributes, #TABLE#OptionalAttributes>;\n\n';
+        // } else {
+        //   str += 'export type #TABLE#CreationAttributes = #TABLE#Attributes;\n\n';
+        // }
+
+        if (this.options.lang === 'ts') {
           str +=
-            'export class #TABLE# extends Model<#TABLE#Attributes, #TABLE#CreationAttributes> implements #TABLE#Attributes {\n';
+            'export class #TABLE# extends Model<Sequelize.InferAttributes<#TABLE#>, Sequelize.InferCreationAttributes<#TABLE#>> {';
           str += this.addTypeScriptFields(table, false);
-          str += '\n' + associations.str;
-          str += '\n' + this.space[1] + 'static initModel(sequelize: Sequelize.Sequelize): typeof #TABLE# {\n';
-
-          if (this.options.useDefine) {
-            str += this.space[2] + "return sequelize.define('#TABLE#', {\n";
-          } else {
-            str += this.space[2] + 'return #TABLE#.init({\n';
-          }
+          str += '\n';
+          str += this.space[1] + 'static initModel(sequelize: Sequelize.Sequelize): typeof #TABLE# {\n';
         } else {
-          str += this.generateTabelOptionV7(table);
+          if(this.options.lang !== 'es5') {
+            str += "export ";
+          }
+          str += 'class #TABLE# extends Model {\n';
+          str += this.space[1] + 'static initModel(sequelize) {\n';
+        }
+
+        if (this.options.useDefine) {
+          str += this.space[2] + "return sequelize.define('#TABLE#', {\n";
+        } else {
+          str += this.space[2] + 'return #TABLE#.init({\n';
+        }
+      } else {
+        str += this.generateTabelOptionV7(table);
+        if (this.options.lang === 'ts') {
           str += 'export class #TABLE# extends Model<InferAttributes<#TABLE#>, InferCreationAttributes<#TABLE#>> {';
+        } else {
+          str += 'export class #TABLE# extends Model {';
         }
       }
 
@@ -190,15 +195,19 @@ export class AutoGenerator {
         }
       }
 
-      if (lang === 'es6' || lang === 'esm' || (lang === 'ts' && this.options.version === 'v6')) {
-        if (this.options.useDefine) {
-          str += this.space[1] + '}\n}\n';
-        } else {
-          // str += this.space[1] + "return #TABLE#;\n";
-          str += this.space[1] + '}\n}\n';
-        }
+      if (this.options.version === 'v6') {
+        str += this.space[1] + '}\n';
+      }
+
+      if (this.options.lang === 'ts') {
+        str += '\n' + associations.str;
+        str += '}\n';
       } else {
-        str += '};\n';
+        str += '}\n';
+      }
+
+      if(this.options.lang === "es5"){
+        str += "module.exports = #TABLE#;";
       }
 
       const re = new RegExp('#TABLE#', 'g');
@@ -229,12 +238,11 @@ export class AutoGenerator {
     let paranoid = (this.options.additional && this.options.additional.paranoid === true) || false;
 
     // add all the fields
-    let str = '\n\n';
+    let str = '\n';
     const fields = _.keys(this.tables[table]);
     fields.forEach((field, index) => {
       timestamps ||= this.isTimestampField(field);
       paranoid ||= this.isParanoidField(field);
-
       str += this.addField(table, field);
     });
 
@@ -291,11 +299,6 @@ export class AutoGenerator {
       str += '\n' + space[1] + '}';
     }
 
-    if (this.options.version == 'v7') {
-      var associations = this.addTypeScriptAssociationMixins(table);
-      str += associations.str;
-    }
-
     return str;
   }
 
@@ -343,7 +346,7 @@ export class AutoGenerator {
     // column's attributes
     const fieldAttrs = _.keys(fieldObj);
 
-    fieldAttrs.forEach((attr) => {
+    fieldAttrs.forEach((attr, index) => {
       // We don't need the special attribute from postgresql; "unique" is handled separately
       if (attr === 'special' || attr === 'elementType' || attr === 'unique') {
         return true;
@@ -559,8 +562,8 @@ export class AutoGenerator {
         str += space[1] + 'declare deletedAt: Date | null;';
       }
       // str += space[1] + "declare " + this.quoteName(fieldName) + ': any \n';
-      str += '\n';
     }
+    str += '\n';
     return str;
   }
 
@@ -754,70 +757,68 @@ export class AutoGenerator {
           // current table is a child that belongsTo parent
           const pparent = _.upperFirst(rel.parentProp);
           str += `${sp}// ${rel.childModel} belongsTo ${rel.parentModel} via ${rel.parentId}\n`;
-          if (this.options.version === 'v6') {
-            str += `${sp}declare ${rel.parentProp}: ${rel.parentModel};\n`;
-            str += `${sp}declare get${pparent}: Sequelize.BelongsToGetAssociationMixin<${rel.parentModel}>;\n`;
-            str += `${sp}declare set${pparent}: Sequelize.BelongsToSetAssociationMixin<${rel.parentModel}, ${rel.parentModel}Id>;\n`;
-            str += `${sp}declare create${pparent}: Sequelize.BelongsToCreateAssociationMixin<${rel.parentModel}>;\n`;
-          } else {
-            str +=
-              sp +
-              `@BelongsTo(() => ${rel.parentModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${
-                rel.parentProp
-              }', type: '${rel.isOne ? 'hasOne' : 'hasMany'}' }})\n`;
-            str += sp + `declare ${rel.parentProp}?: NonAttribute<${rel.parentModel}>\n\n`;
-          }
+          // if (this.options.version === 'v6') {
+          str += `${sp}declare ${rel.parentProp}?: ${rel.parentModel};\n`;
+          str += `${sp}declare get${pparent}: Sequelize.BelongsToGetAssociationMixin<${rel.parentModel}>;\n`;
+          str += `${sp}declare set${pparent}: Sequelize.BelongsToSetAssociationMixin<${rel.parentModel}, number>;\n`;
+          str += `${sp}declare create${pparent}: Sequelize.BelongsToCreateAssociationMixin<${rel.parentModel}>;\n\n`;
+          // } else {
+          //   str +=
+          //     sp +
+          //     `@BelongsTo(() => ${rel.parentModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${
+          //       rel.parentProp
+          //     }', type: '${rel.isOne ? 'hasOne' : 'hasMany'}' }})\n`;
+          //   str += sp + `declare ${rel.parentProp}?: NonAttribute<${rel.parentModel}>\n\n`;
+          // }
 
           needed[rel.parentTable] ??= new Set();
           needed[rel.parentTable].add(rel.parentModel);
-          needed[rel.parentTable].add(rel.parentModel + 'Id');
         } else if (rel.parentTable === table) {
           needed[rel.childTable] ??= new Set();
           const pchild = _.upperFirst(rel.childProp);
           if (rel.isOne) {
             // const hasModelSingular = singularize(hasModel);
             str += `${sp}// ${rel.parentModel} hasOne ${rel.childModel} via ${rel.parentId}\n`;
-            if (this.options.version === 'v6') {
-              str += `${sp}declare ${rel.childProp}: ${rel.parentId};\n`;
-              str += `${sp}declare get${pchild}: Sequelize.HasOneGetAssociationMixin<${rel.childModel}>;\n`;
-              str += `${sp}declare set${pchild}: Sequelize.HasOneSetAssociationMixin<${rel.childModel}, ${rel.childModel}Id>;\n`;
-              str += `${sp}declare create${pchild}: Sequelize.HasOneCreateAssociationMixin<${rel.childModel}>;\n`;
-            } else {
-              str +=
-                sp +
-                `@HasOne(() => ${rel.childModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${rel.childProp}' }})\n`;
-              str += sp + `declare ${rel.childProp}?: NonAttribute<${rel.childModel}>\n\n`;
-            }
+            // if (this.options.version === 'v6') {
+            str += `${sp}declare ${rel.childProp}?: ${rel.parentId};\n`;
+            str += `${sp}declare get${pchild}: Sequelize.HasOneGetAssociationMixin<${rel.childModel}>;\n`;
+            str += `${sp}declare set${pchild}: Sequelize.HasOneSetAssociationMixin<${rel.childModel}, number>;\n`;
+            str += `${sp}declare create${pchild}: Sequelize.HasOneCreateAssociationMixin<${rel.childModel}>;\n`;
+            // } else {
+            //   str +=
+            //     sp +
+            //     `@HasOne(() => ${rel.childModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${rel.childProp}' }})\n`;
+            //   str += sp + `declare ${rel.childProp}?: NonAttribute<${rel.childModel}>\n\n`;
+            // }
 
             needed[rel.childTable].add(rel.childModel);
-            needed[rel.childTable].add(`${rel.childModel}Id`);
-            needed[rel.childTable].add(`${rel.childModel}CreationAttributes`);
           } else {
             const hasModel = rel.childModel;
             const sing = _.upperFirst(singularize(rel.childProp));
             const lur = pluralize(rel.childProp);
             const plur = _.upperFirst(lur);
             str += `${sp}// ${rel.parentModel} hasMany ${rel.childModel} via ${rel.parentId}\n`;
-            if (this.options.version === 'v6') {
-              str += `${sp}declare ${lur}: ${rel.childModel}[];\n`;
-              str += `${sp}declare get${plur}: Sequelize.HasManyGetAssociationsMixin<${hasModel}>;\n`;
-              str += `${sp}declare set${plur}: Sequelize.HasManySetAssociationsMixin<${hasModel}, ${hasModel}Id>;\n`;
-              str += `${sp}declare add${sing}: Sequelize.HasManyAddAssociationMixin<${hasModel}, ${hasModel}Id>;\n`;
-              str += `${sp}declare add${plur}: Sequelize.HasManyAddAssociationsMixin<${hasModel}, ${hasModel}Id>;\n`;
-              str += `${sp}declare create${sing}: Sequelize.HasManyCreateAssociationMixin<${hasModel}>;\n`;
-              str += `${sp}declare remove${sing}: Sequelize.HasManyRemoveAssociationMixin<${hasModel}, ${hasModel}Id>;\n`;
-              str += `${sp}declare remove${plur}: Sequelize.HasManyRemoveAssociationsMixin<${hasModel}, ${hasModel}Id>;\n`;
-              str += `${sp}declare has${sing}: Sequelize.HasManyHasAssociationMixin<${hasModel}, ${hasModel}Id>;\n`;
-              str += `${sp}declare has${plur}: Sequelize.HasManyHasAssociationsMixin<${hasModel}, ${hasModel}Id>;\n`;
-              str += `${sp}declare count${plur}: Sequelize.HasManyCountAssociationsMixin;\n`;
-            } else {
-              str +=
-                sp +
-                `@HasMany(() => ${rel.childModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${rel.childProp}' } })\n`;
-              str += sp + `declare ${rel.childProp}?: NonAttribute<${rel.childModel}[]>\n\n`;
-            }
+            // if (this.options.version === 'v6') {
+            str += `${sp}declare ${lur}: Sequelize.NonAttribute<${rel.childModel}[]>;\n`;
+            str += `${sp}declare get${plur}: Sequelize.HasManyGetAssociationsMixin<${hasModel}>;\n`;
+            str += `${sp}declare set${plur}: Sequelize.HasManySetAssociationsMixin<${hasModel}, number>;\n`;
+            str += `${sp}declare add${sing}: Sequelize.HasManyAddAssociationMixin<${hasModel}, number>;\n`;
+            str += `${sp}declare add${plur}: Sequelize.HasManyAddAssociationsMixin<${hasModel}, number>;\n`;
+            str += `${sp}declare create${sing}: Sequelize.HasManyCreateAssociationMixin<${hasModel}>;\n`;
+            str += `${sp}declare remove${sing}: Sequelize.HasManyRemoveAssociationMixin<${hasModel}, number>;\n`;
+            str += `${sp}declare remove${plur}: Sequelize.HasManyRemoveAssociationsMixin<${hasModel}, number>;\n`;
+            str += `${sp}declare has${sing}: Sequelize.HasManyHasAssociationMixin<${hasModel}, number>;\n`;
+            str += `${sp}declare has${plur}: Sequelize.HasManyHasAssociationsMixin<${hasModel}, number>;\n`;
+            str += `${sp}declare count${plur}: Sequelize.HasManyCountAssociationsMixin${
+              this.options.version === 'v7' ? `<${hasModel}>` : ''
+            };\n\n`;
+            // } else {
+            //   str +=
+            //     sp +
+            //     `@HasMany(() => ${rel.childModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${rel.childProp}' } })\n`;
+            //   str += sp + `declare ${rel.childProp}?: NonAttribute<${rel.childModel}[]>\n\n`;
+            // }
             needed[rel.childTable].add(hasModel);
-            needed[rel.childTable].add(`${hasModel}Id`);
           }
         }
       } else {
@@ -833,29 +834,28 @@ export class AutoGenerator {
           const otherTable = isParent ? rel.childTable : rel.parentTable;
           str += `${sp}// ${thisModel} belongsToMany ${otherModel} via ${rel.parentId} and ${rel.childId}\n`;
 
-          if (this.options.version === 'v6') {
-            str += `${sp}declare ${lotherModelPlural}: ${otherModel}[];\n`;
-            str += `${sp}declare get${otherModelPlural}: Sequelize.BelongsToManyGetAssociationsMixin<${otherModel}>;\n`;
-            str += `${sp}declare set${otherModelPlural}: Sequelize.BelongsToManySetAssociationsMixin<${otherModel}, ${otherModel}Id>;\n`;
-            str += `${sp}declare add${otherModelSingular}: Sequelize.BelongsToManyAddAssociationMixin<${otherModel}, ${otherModel}Id>;\n`;
-            str += `${sp}declare add${otherModelPlural}: Sequelize.BelongsToManyAddAssociationsMixin<${otherModel}, ${otherModel}Id>;\n`;
-            str += `${sp}declare create${otherModelSingular}: Sequelize.BelongsToManyCreateAssociationMixin<${otherModel}>;\n`;
-            str += `${sp}declare remove${otherModelSingular}: Sequelize.BelongsToManyRemoveAssociationMixin<${otherModel}, ${otherModel}Id>;\n`;
-            str += `${sp}declare remove${otherModelPlural}: Sequelize.BelongsToManyRemoveAssociationsMixin<${otherModel}, ${otherModel}Id>;\n`;
-            str += `${sp}declare has${otherModelSingular}: Sequelize.BelongsToManyHasAssociationMixin<${otherModel}, ${otherModel}Id>;\n`;
-            str += `${sp}declare has${otherModelPlural}: Sequelize.BelongsToManyHasAssociationsMixin<${otherModel}, ${otherModel}Id>;\n`;
-            str += `${sp}declare count${otherModelPlural}: Sequelize.BelongsToManyCountAssociationsMixin;\n`;
-          } else {
-            str += `${sp}@BelongsToMany(() => ${otherModel}, { through: ()=> ${rel.joinModel}, foreignKey: '${rel.parentId}', inverse:  { as: '${rel.childProp}'}, otherKey: '${rel.childId}', })\n`;
-            str += sp + `declare ${rel.childProp}?: NonAttribute<${otherModel}[]>\n\n`;
-          }
+          // if (this.options.version === 'v6') {
+          str += `${sp}declare ${lotherModelPlural}: ${otherModel}[];\n`;
+          str += `${sp}declare get${otherModelPlural}: Sequelize.BelongsToManyGetAssociationsMixin<${otherModel}>;\n`;
+          str += `${sp}declare set${otherModelPlural}: Sequelize.BelongsToManySetAssociationsMixin<${otherModel}, number>;\n`;
+          str += `${sp}declare add${otherModelSingular}: Sequelize.BelongsToManyAddAssociationMixin<${otherModel}, number>;\n`;
+          str += `${sp}declare add${otherModelPlural}: Sequelize.BelongsToManyAddAssociationsMixin<${otherModel}, number>;\n`;
+          str += `${sp}declare create${otherModelSingular}: Sequelize.BelongsToManyCreateAssociationMixin<${otherModel}>;\n`;
+          str += `${sp}declare remove${otherModelSingular}: Sequelize.BelongsToManyRemoveAssociationMixin<${otherModel}, number>;\n`;
+          str += `${sp}declare remove${otherModelPlural}: Sequelize.BelongsToManyRemoveAssociationsMixin<${otherModel}, number>;\n`;
+          str += `${sp}declare has${otherModelSingular}: Sequelize.BelongsToManyHasAssociationMixin<${otherModel}, number>;\n`;
+          str += `${sp}declare has${otherModelPlural}: Sequelize.BelongsToManyHasAssociationsMixin<${otherModel}, number>;\n`;
+          str += `${sp}declare count${otherModelPlural}: Sequelize.BelongsToManyCountAssociationsMixin${
+            this.options.version === 'v7' ? `<${otherModel}>` : ''
+          };\n`;
+          // } else {
+          //   str += `${sp}@BelongsToMany(() => ${otherModel}, { through: ()=> ${rel.joinModel}, foreignKey: '${rel.parentId}', inverse:  { as: '${rel.childProp}'}, otherKey: '${rel.childId}', })\n`;
+          //   str += sp + `declare ${rel.childProp}?: NonAttribute<${otherModel}[]>\n\n`;
+          // }
           needed[otherTable] ??= new Set();
           needed[otherTable].add(otherModel);
-          needed[otherTable].add(`${otherModel}Id`);
         }
       }
-
-      // console.log(rel);
     });
     if (needed[table]) {
       delete needed[table]; // don't add import for self
@@ -891,14 +891,19 @@ export class AutoGenerator {
         const isOptional = this.getTypeScriptFieldOptional(table, field);
 
         if (field == column) {
-          if (isAutoIncrement) {
-            str += `${sp}declare ${name}: CreationOptional<${this.getTypeScriptType(table, field)}>;\n`;
-            // CreationOptional<number>
+          if (this.options.lang === 'ts') {
+            if (isAutoIncrement) {
+              str += `${sp}declare ${name}: CreationOptional<${this.getTypeScriptType(table, field)}>;\n`;
+            } else {
+              if (this.options.lang === 'ts') {
+                str += `${sp}${isInterface ? '' : 'declare '}${name}${isOptional ? '?' : ''}: ${this.getTypeScriptType(
+                  table,
+                  field
+                )};\n`;
+              }
+            }
           } else {
-            str += `${sp}${isInterface ? '' : 'declare '}${name}${isOptional ? '?' : ''}: ${this.getTypeScriptType(
-              table,
-              field
-            )};\n`;
+            str += `${sp}${name};\n`;
           }
         }
       }

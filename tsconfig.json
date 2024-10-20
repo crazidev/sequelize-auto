@@ -9,7 +9,7 @@
     "moduleResolution": "node",
     "noImplicitAny": true,
     "esModuleInterop": true,
-    "outDir": "lib",
+    "outDir": "lib/src",
     "preserveConstEnums": true,
     "removeComments": false,
     "sourceMap": true,

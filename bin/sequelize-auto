@@ -134,10 +134,11 @@ const argv = require('yargs')
     description: 'Singularize model and file names from plural table names',
     type: 'boolean',
     alias: 'sg'
-  }).option('version', {
-    description: 'Sequelize model version: v6|v7',
+  })
+  .option('schemeVersion', {
+    description: 'Sequelize scheme version: v6|v7',
     type: 'string',
-    alias: 'v'
+    alias: 'sv'
   })
   .check(argv => Boolean((argv.database && (argv.host || argv.dialect === 'sqlite')) || argv.config))
   .argv;
@@ -224,7 +225,7 @@ async function readPassword() {
   configFile.useDefine = argv.useDefine || configFile.useDefine || false;
   configFile.indentation = argv.indentation || configFile.indentation || 2;
   configFile.noIndexes = argv.noIndexes || configFile.noIndexes || false;
-  configFile.version = argv.version || configFile.version || 'v6';
+  configFile.version = argv.schemeVersion || configFile.schemeVersion || 'v6';
 
 
   console.log(_.omit(configFile, 'password'));
@@ -234,7 +235,6 @@ async function readPassword() {
 
   await auto.run();
   console.log("Done!");
-
 }()).catch(err => {
   if (err.stack) {
     console.error(err.stack);

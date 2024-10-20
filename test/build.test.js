@@ -13,7 +13,7 @@ describe(helpers.getTestDialectTeaser("sequelize-auto build"), function() {
   self.timeout(10000);
 
   after(function(done) {
-    helpers.clearDatabase(self.sequelize, done, true);
+    // helpers.clearDatabase(self.sequelize, done, true);
   });
 
   before(function(done) {
@@ -31,7 +31,8 @@ describe(helpers.getTestDialectTeaser("sequelize-auto build"), function() {
       views: helpers.views,
       caseModel: isSnakeTables ? 'p' : undefined,
       caseProp: isSnakeTables ? 'p' : undefined,
-      version: "v7"
+      lang: 'esm',
+      version: "v6"
     }, testConfig[helpers.getTestDialect()], self.sequelize.config);
 
     var auto = new SequelizeAuto(self.sequelize.config.database, self.sequelize.config.username, self.sequelize.config.password, options);
