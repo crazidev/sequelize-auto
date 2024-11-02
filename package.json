@@ -42,7 +42,7 @@
   "scripts": {
     "tsc": "tsc",
     "clean": "rimraf lib && rimraf types && rimraf **/models && rimraf *.tgz",
-    "build": "npm run clean && swc src --out-dir lib/src",
+    "build": "npm run clean && tsc",
     "watch-build": "npm run clean && swc src -w --out-dir lib/src",
     "prepare": "npm run build",
     "dev": "concurrently \"npm run watch-build\" \"npm run watch-dev\"",
