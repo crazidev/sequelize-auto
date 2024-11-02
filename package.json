@@ -42,9 +42,8 @@
   "scripts": {
     "tsc": "tsc",
     "clean": "rimraf lib && rimraf types && rimraf **/models && rimraf *.tgz",
-    "build": "npm run clean && swc src --out-dir lib/src",
-    "watch-build": "npm run clean && swc src -w --out-dir lib/src",
-    "prepare": "npm run build",
+    "build": "npm run clean && swc src --out-dir lib/",
+    "watch-build": "npm run clean && swc src -w --out-dir lib/",
     "dev": "concurrently \"npm run watch-build\" \"npm run watch-dev\"",
     "prepack": "crlf --set=LF bin/sequelize-auto",
     "watch-dev": "nodemon --watch \"lib/src/**/*\" -e js ./sample/export.js",
@@ -70,11 +69,12 @@
     "mkdirp": "^1.0.4",
     "reserved-words": "^0.1.2",
     "sequelize": "^6.37.4",
-    "yargs": "^16.2.0",
-    "swc": "^1.0.11"
+    "yargs": "^16.2.0"
   },
   "devDependencies": {
     "@sequelize/core": "^7.0.0-alpha.42",
+    "@swc/cli": "^0.5.0",
+    "@swc/core": "^1.7.42",
     "@types/chai": "^4.2.17",
     "@types/lodash": "^4.14.168",
     "@types/mocha": "^8.2.2",
