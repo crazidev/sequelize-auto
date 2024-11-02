@@ -158,7 +158,7 @@ export class AutoGenerator {
 
         if (this.options.lang === 'ts') {
           str +=
-            'export class #TABLE# extends Model<Sequelize.InferAttributes<#TABLE#>, Sequelize.InferCreationAttributes<#TABLE#>> {';
+            'export class #TABLE# extends Model<\n Sequelize.InferAttributes<#TABLE#>,\n Sequelize.InferCreationAttributes<#TABLE#>\n> {\n';
           str += this.addTypeScriptFields(table, false);
           str += '\n';
           str += this.space[1] + 'static initModel(sequelize: Sequelize.Sequelize): typeof #TABLE# {\n';
@@ -166,7 +166,6 @@ export class AutoGenerator {
           if (this.options.lang !== 'es5') {
             str += 'export ';
           }
-          str += 'class #TABLE# extends Model {\n';
           str += this.space[1] + 'static initModel(sequelize) {\n';
         }
 

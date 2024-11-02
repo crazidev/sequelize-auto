@@ -44,7 +44,7 @@
     "clean": "rimraf lib && rimraf types && rimraf **/models && rimraf *.tgz",
     "build": "npm run clean && tsc",
     "prepack": "crlf --set=LF bin/sequelize-auto",
-    "dev": "concurrently \"bun swc src -w --out-dir lib\" \"npm run watch-dev\"",
+    "dev": "concurrently \"bun swc src -w --out-dir lib/src\" \"npm run watch-dev\"",
     "watch-dev": "nodemon --watch \"lib/src/**/*\" -e js ./sample/export.js",
     "test": "npm run test-mssql && npm run test-mysql && npm run test-postgres && npm run test-sqlite",
     "test-postgres": "cross-env DEBUG='sequelize-auto:*' DIALECT=postgres nyc mocha",
@@ -77,6 +77,7 @@
     "@types/mocha": "^8.2.2",
     "@types/reserved-words": "0.1.0",
     "chai": "^4.3.4",
+    "concurrently": "^9.0.1",
     "coveralls": "^3.1.0",
     "crlf": "^1.1.1",
     "cross-env": "^7.0.3",
@@ -93,6 +94,7 @@
     "rimraf": "^3.0.2",
     "sqlite3": "5.0.2",
     "tedious": "^11.0.6",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "swc": "^1.0.11"
   }
 }
