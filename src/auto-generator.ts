@@ -127,35 +127,6 @@ export class AutoGenerator {
       str += '\n';
 
       if (this.options.version === 'v6') {
-        // str += this.space[2] + 'User.init({\n';
-        // static initModel(sequelize: Sequelize): typeof Salary {
-        // Salary.init({
-
-        // if (this.options.lang === 'ts') {
-        //   str += '\nexport interface #TABLE#Attributes {\n';
-        //   str += this.addTypeScriptFields(table, true) + '}\n\n';
-        // }
-
-        // const primaryKeys = this.getTypeScriptPrimaryKeys(table);
-
-        // if (primaryKeys.length) {
-        //   str += `export type #TABLE#Pk = ${primaryKeys
-        //     .map((k) => `"${recase(this.options.caseProp, k)}"`)
-        //     .join(' | ')};\n`;
-        //   str += `export type #TABLE#Id = #TABLE#[#TABLE#Pk];\n`;
-        // }
-
-        // const creationOptionalFields = this.getTypeScriptCreationOptionalFields(table);
-
-        // if (creationOptionalFields.length) {
-        //   str += `export type #TABLE#OptionalAttributes = ${creationOptionalFields
-        //     .map((k) => `"${recase(this.options.caseProp, k)}"`)
-        //     .join(' | ')};\n`;
-        //   str += 'export type #TABLE#CreationAttributes = Optional<#TABLE#Attributes, #TABLE#OptionalAttributes>;\n\n';
-        // } else {
-        //   str += 'export type #TABLE#CreationAttributes = #TABLE#Attributes;\n\n';
-        // }
-
         if (this.options.lang === 'ts') {
           str +=
             'export class #TABLE# extends Model<\n Sequelize.InferAttributes<#TABLE#>,\n Sequelize.InferCreationAttributes<#TABLE#>\n> {\n';
@@ -769,7 +740,7 @@ export class AutoGenerator {
           str += `${sp}declare get${pparent}: Sequelize.BelongsToGetAssociationMixin<${rel.parentModel}>;\n`;
           str += `${sp}declare set${pparent}: Sequelize.BelongsToSetAssociationMixin<${rel.parentModel}, number>;\n`;
           str += `${sp}declare create${pparent}: Sequelize.BelongsToCreateAssociationMixin<${rel.parentModel}>;\n\n`;
-          
+
           needed[rel.parentTable] ??= new Set();
           needed[rel.parentTable].add(rel.parentModel);
         } else if (rel.parentTable === table) {
@@ -789,7 +760,6 @@ export class AutoGenerator {
             str += `${sp}declare get${pchild}: Sequelize.HasOneGetAssociationMixin<${rel.childModel}>;\n`;
             str += `${sp}declare set${pchild}: Sequelize.HasOneSetAssociationMixin<${rel.childModel}, number>;\n`;
             str += `${sp}declare create${pchild}: Sequelize.HasOneCreateAssociationMixin<${rel.childModel}>;\n`;
-            
 
             needed[rel.childTable].add(rel.childModel);
           } else {
@@ -804,7 +774,7 @@ export class AutoGenerator {
                 `@HasMany(() => ${rel.childModel}, { foreignKey: '${rel.parentId}', inverse: { as: '${rel.childProp}' } })\n`;
               str += sp + `declare ${rel.childProp}?: NonAttribute<${rel.childModel}[]>\n\n`;
             } else {
-               str += `${sp}declare ${lur}: Sequelize.NonAttribute<${rel.childModel}[]>;\n`;
+              str += `${sp}declare ${lur}: Sequelize.NonAttribute<${rel.childModel}[]>;\n`;
             }
             str += `${sp}declare get${plur}: Sequelize.HasManyGetAssociationsMixin<${hasModel}>;\n`;
             str += `${sp}declare set${plur}: Sequelize.HasManySetAssociationsMixin<${hasModel}, number>;\n`;
@@ -818,7 +788,7 @@ export class AutoGenerator {
             str += `${sp}declare count${plur}: Sequelize.HasManyCountAssociationsMixin${
               this.options.version === 'v7' ? `<${hasModel}>` : ''
             };\n\n`;
-           
+
             needed[rel.childTable].add(hasModel);
           }
         }
@@ -853,7 +823,7 @@ export class AutoGenerator {
           str += `${sp}declare count${otherModelPlural}: Sequelize.BelongsToManyCountAssociationsMixin${
             this.options.version === 'v7' ? `<${otherModel}>` : ''
           };\n`;
-        
+
           needed[otherTable] ??= new Set();
           needed[otherTable].add(otherModel);
         }
