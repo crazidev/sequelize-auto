@@ -140,6 +140,11 @@ const argv = require('yargs')
     type: 'string',
     alias: 'sv'
   })
+  .option('generateMigration', {
+    description: 'Generation sequelize migration scripts',
+    type: 'boolean',
+    alias: 'gm',
+  })
   .check(argv => Boolean((argv.database && (argv.host || argv.dialect === 'sqlite')) || argv.config))
   .argv;
 

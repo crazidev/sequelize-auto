@@ -187,6 +187,8 @@ export interface AutoOptions {
   useDefine: boolean;
   /** Sequelize model version */
   version?: 'v6' | 'v7';
+  /** Generate migrations */
+  generateMigrations?: boolean;
 }
 
 export type TSField = { special: string[]; elementType: string; } & ColumnDescription;

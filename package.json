@@ -43,7 +43,7 @@
     "tsc": "tsc",
     "clean": "rimraf lib && rimraf types && rimraf **/models && rimraf *.tgz",
     "build": "npm run clean && swc src --out-dir lib/",
-    "watch-build": "npm run clean && swc src -w --out-dir lib/",
+    "watch-build": "swc src -w --out-dir lib/",
     "dev": "concurrently \"npm run watch-build\" \"npm run watch-dev\"",
     "prepack": "crlf --set=LF bin/sequelize-auto",
     "watch-dev": "nodemon --watch \"lib/src/**/*\" -e js ./sample/export.js",

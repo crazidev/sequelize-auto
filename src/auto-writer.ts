@@ -37,6 +37,7 @@ export class AutoWriter {
     spaces?: boolean;
     indentation?: number;
     version?: 'v6' | 'v7';
+    generateMigrations?: boolean;
   };
   constructor(tableData: TableData, options: AutoOptions) {
     this.tableText = tableData.text as { [name: string]: string };
@@ -196,7 +197,7 @@ export class AutoWriter {
       const modelName = makeTableName(this.options.caseModel, t, this.options.singularize, this.options.lang);
       modelNames.push(modelName);
     });
-    
+
     // return the models
     str += `${sp}return [\n`;
     modelNames.forEach((m) => {
