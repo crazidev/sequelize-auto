@@ -84,6 +84,7 @@ export class TableData {
   relations: Relation[];
   /** Text to be written to the model files, indexed by schemaName.tableName */
   text?: { [name: string]: string; };
+  migration?: { [name: string]: string; };
   constructor() {
     this.tables = {};
     this.foreignKeys = {};
@@ -188,7 +189,7 @@ export interface AutoOptions {
   /** Sequelize model version */
   version?: 'v6' | 'v7';
   /** Generate migrations */
-  generateMigrations?: boolean;
+  generateMigration?: boolean;
 }
 
 export type TSField = { special: string[]; elementType: string; } & ColumnDescription;

@@ -1,5 +1,7 @@
 const path = require('path');
 const output = path.join(__dirname, './models');
+
+/** @type {import('./config').AutoOptions} */
 const options = {
   directory: output,
   caseFile: 'l',
@@ -12,12 +14,14 @@ const options = {
   noAlias: true,
   indentation: 2,
   version: 'v6',
+  generateMigration: true
 };
 
 // Edit the configuration below for your database dialect
 
 // sqlite
 const storage = path.join(__dirname, './northwind.sqlite');
+/** @type {import('./config').Config} */
 const sqlite = {
   dbname: 'northwind',
   user: '',
@@ -27,6 +31,7 @@ const sqlite = {
 };
 
 // mssql
+/** @type {import('./config').Config} */
 const mssql = {
   dbname: 'northwind',
   user: 'mssql',
@@ -36,6 +41,7 @@ const mssql = {
 };
 
 // mysql
+/** @type {import('./config').Config} */
 const mysql = {
   dbname: 'afrikmart',
   user: 'root',
@@ -45,6 +51,7 @@ const mysql = {
 };
 
 // postgres
+/** @type {import('./config').Config} */
 const postgres = {
   dbname: 'postgres',
   user: 'postgres',

@@ -231,6 +231,7 @@ async function readPassword() {
   configFile.indentation = argv.indentation || configFile.indentation || 2;
   configFile.noIndexes = argv.noIndexes || configFile.noIndexes || false;
   configFile.version = argv.schemeVersion || configFile.schemeVersion || 'v6';
+  configFile.generateMigration = argv.generateMigration || configFile.generateMigration || false;
 
 
   console.log(_.omit(configFile, 'password'));

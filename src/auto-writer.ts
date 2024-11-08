@@ -20,6 +20,7 @@ const mkdirp = require('mkdirp');
 /** Writes text into files from TableData.text, and writes init-models */
 export class AutoWriter {
   tableText: { [name: string]: string };
+  tableMigration: { [name: string]: string };
   foreignKeys: { [tableName: string]: { [fieldName: string]: FKSpec } };
   relations: Relation[];
   space: string[];
@@ -37,10 +38,11 @@ export class AutoWriter {
     spaces?: boolean;
     indentation?: number;
     version?: 'v6' | 'v7';
-    generateMigrations?: boolean;
+    generateMigration?: boolean;
   };
   constructor(tableData: TableData, options: AutoOptions) {
     this.tableText = tableData.text as { [name: string]: string };
+    this.tableMigration = tableData.migration as { [name: string]: string };
     this.foreignKeys = tableData.foreignKeys;
     this.relations = tableData.relations;
     this.options = options;
@@ -55,10 +57,11 @@ export class AutoWriter {
     mkdirp.sync(path.resolve(this.options.directory || './models'));
 
     const tables = _.keys(this.tableText);
+    const tablesM = _.keys(this.tableText);
 
     // write the individual model files
-    const promises = tables.map((t) => {
-      return this.createFile(t);
+    const promises = tables.map((t, index) => {
+      return this.createFile(t, index);
     });
 
     const isTypeScript = this.options.lang === 'ts';
@@ -79,11 +82,108 @@ export class AutoWriter {
       const initFilePath = path.join(this.options.directory, 'init-models' + (isTypeScript ? '.ts' : '.js'));
       const writeFile = util.promisify(fs.writeFile);
       const initPromise = writeFile(path.resolve(initFilePath), initString);
+
       promises.push(initPromise);
+    }
+
+    if (this.options.generateMigration) {
+      promises.push(this.generateFkFile(tableNames));
     }
 
     return Promise.all(promises);
   }
+
+  private generateFkFile(tableNames: string[]) {
+    var str = '';
+    str += `"use strict";\n`;
+    str += `const { DataTypes } = require("sequelize");\n\n`;
+    str += `/** @type {import('sequelize-cli').Migration} */\n`;
+    str += `module.exports = {\n`;
+
+    // Generate the "up" function
+    str += `${this.space[1]}up(queryInterface, Sequelize) {\n`;
+    str += `${this.space[2]}return queryInterface.sequelize.transaction(t => {\n`;
+    str += `${this.space[3]}return Promise.all([\n`;
+
+    tableNames.forEach((table) => {
+      if (this.foreignKeys[table]) {
+        const foreignKeys = this.foreignKeys[table];
+        _.keys(foreignKeys).forEach((field) => {
+          const foreignKey = foreignKeys[field];
+          var fk_str = '';
+
+          var constraint_name = this.generateConstraintName(table, field, foreignKey);
+
+          // Add the index for the foreign key field first
+          // fk_str += `${this.space[3]}queryInterface.addIndex("${table}", ["${field}"], {\n`;
+          // fk_str += `${this.space[4]}transaction: t\n`;
+          // fk_str += `${this.space[3]}}),\n\n`;
+
+          // Add the foreign key constraint after the index
+          fk_str += `${this.space[3]}queryInterface.addConstraint("${table}", {\n`;
+          fk_str += `${this.space[4]}fields: ["${field}"],\n`;
+          fk_str += `${this.space[4]}name: "${constraint_name}",\n`;
+          fk_str += `${this.space[4]}type: "${foreignKey.isPrimaryKey ? 'primary key' : 'foreign key'}",\n`;
+          if (foreignKey.isForeignKey) {
+            fk_str += `${this.space[4]}references: {\n`;
+            fk_str += `${this.space[5]}table: "${foreignKey.target_table}",\n`;
+            fk_str += `${this.space[5]}field: "${foreignKey.target_column}"\n`;
+            fk_str += `${this.space[4]}},\n`;
+          }
+          fk_str += `${this.space[4]}transaction: t\n`;
+          fk_str += `${this.space[3]}}),\n\n`;
+
+          if (foreignKey.isForeignKey) {
+            str += fk_str;
+          }
+        });
+      }
+    });
+
+    str += `${this.space[3]}]);\n`;
+    str += `${this.space[2]}});\n`;
+    str += `${this.space[1]}},\n\n`;
+
+    // Generate the "down" function to remove the constraints and indexes
+    str += `${this.space[1]}down(queryInterface, Sequelize) {\n`;
+    str += `${this.space[2]}return queryInterface.sequelize.transaction(t => {\n`;
+    str += `${this.space[3]}return Promise.all([\n`;
+
+    tableNames.forEach((table) => {
+      if (this.foreignKeys[table]) {
+        const foreignKeys = this.foreignKeys[table];
+        _.keys(foreignKeys).forEach((field) => {
+          const foreignKey = foreignKeys[field];
+          var fk_str_down = '';
+          var constraint_name = this.generateConstraintName(table, field, foreignKey);
+          // Remove the foreign key constraint
+          fk_str_down += `${this.space[3]}queryInterface.removeConstraint("${table}", "${constraint_name}", { transaction: t }),\n`;
+
+          // Remove the index for the foreign key field after removing the constraint
+          // fk_str_down += `${this.space[3]}queryInterface.removeIndex("${table}", ["${field}"], { transaction: t }),\n`;
+
+          if (foreignKey.isForeignKey) {
+            str += fk_str_down;
+          }
+        });
+      }
+    });
+
+    str += `${this.space[3]}]);\n`;
+    str += `${this.space[2]}});\n`;
+    str += `${this.space[1]}}\n`;
+    str += `};\n`;
+
+    const initFkFilePath = path.join(this.options.directory, 'migrations', 'zzz_add_constraints.js');
+    const writeFile = util.promisify(fs.writeFile);
+    const initFkPromise = writeFile(path.resolve(initFkFilePath), str);
+    return initFkPromise;
+  }
+
+  generateConstraintName(table: string, field: string, foreignKey: FKSpec) {
+    return `${table}(${field})-${foreignKey.target_table}(${foreignKey.target_column})_fk`;
+  }
+
   private createInitString(tableNames: string[], assoc: string, lang?: string) {
     switch (lang) {
       case 'ts':
@@ -96,15 +196,24 @@ export class AutoWriter {
         return this.createES5InitString(tableNames, assoc, 'var');
     }
   }
-  private createFile(table: string) {
+  private createFile(table: string, index: number) {
     // FIXME: schema is not used to write the file name and there could be collisions. For now it
     // is up to the developer to pick the right schema, and potentially chose different output
     // folders for each different schema.
     const [schemaName, tableName] = qNameSplit(table);
     const fileName = recase(this.options.caseFile, tableName, this.options.singularize);
     const filePath = path.join(this.options.directory, fileName + (this.options.lang === 'ts' ? '.ts' : '.js'));
-
     const writeFile = util.promisify(fs.writeFile);
+
+    if (this.options.generateMigration) {
+      const migrationsDir = path.join(this.options.directory, 'migrations');
+      if (!fs.existsSync(migrationsDir)) {
+        mkdirp.sync(migrationsDir);
+      }
+      const fileMigrationPath = path.join(migrationsDir, `create-${fileName}-table.js`);
+      writeFile(path.resolve(fileMigrationPath), this.tableMigration[table]);
+    }
+
     return writeFile(path.resolve(filePath), this.tableText[table]);
   }
 
