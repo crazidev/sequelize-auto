@@ -65,7 +65,7 @@ export class AutoGenerator {
     if (this.options.lang === 'ts') {
       if (this.options.version === 'v6') {
         header += "import * as Sequelize from 'sequelize';\n";
-        header += "import { DataTypes, Model, Optional } from 'sequelize';\n";
+        header += "import { DataTypes, Model, CreationOptional } from 'sequelize';\n";
       } else {
         header += this.makeHeaderImportV7();
       }
@@ -397,7 +397,7 @@ export class AutoGenerator {
 
       if (attr === 'foreignKey') {
         if (foreignKey && foreignKey.isForeignKey && add_reference == true) {
-          if (this.options.version === 'v6' ) {
+          if (this.options.version === 'v6') {
             str += space[3] + 'references: {\n';
             str += space[4] + "model: '" + fieldObj[attr].foreignSources.target_table + "',\n";
             str += space[4] + "key: '" + fieldObj[attr].foreignSources.target_column + "'\n";
@@ -897,10 +897,18 @@ export class AutoGenerator {
       if (!this.options.skipFields || !this.options.skipFields.includes(field)) {
         const name = this.quoteName(recase(this.options.caseProp, field));
         const isOptional = this.getTypeScriptFieldOptional(table, field);
-        str += `${sp}${isInterface ? '' : 'declare '}${name}${isOptional ? '?' : ''}: ${this.getTypeScriptType(
-          table,
-          field
-        )};\n`;
+        const isPrimaryKey = this.getTypeScriptPrimaryKeys(table).includes(name);
+
+        if (isPrimaryKey) {
+          str += `${sp}${isInterface ? '' : 'declare '}${name}${
+            isOptional ? '?' : ''
+          }: CreationOptional<${this.getTypeScriptType(table, field)}>;\n`;
+        } else {
+          str += `${sp}${isInterface ? '' : 'declare '}${name}${isOptional ? '?' : ''}: ${this.getTypeScriptType(
+            table,
+            field
+          )};\n`;
+        }
       }
     });
     return str;

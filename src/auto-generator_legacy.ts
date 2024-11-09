@@ -149,7 +149,7 @@ export class AutoGenerator {
   }
 
   generateMigration(){
-    
+
   }
 
   makeHeaderTemplate() {
