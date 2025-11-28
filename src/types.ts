@@ -190,6 +190,13 @@ export interface AutoOptions {
   version?: 'v6' | 'v7';
   /** Generate migrations */
   generateMigration?: boolean;
+  /** 
+   * Association mixin generation mode:
+   * - 'all' (default): Generate property + all mixins (get, set, add, create, remove, has, count)
+   * - 'property': Generate only the property (declare alerts: ...)
+   * - 'none': Do not generate any association declarations in the model body
+   */
+  associationMixins?: 'all' | 'property' | 'none';
 }
 
 export type TSField = { special: string[]; elementType: string; } & ColumnDescription;

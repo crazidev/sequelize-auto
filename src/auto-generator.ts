@@ -118,9 +118,15 @@ export class AutoGenerator {
           const set = associations.needed[fkTable];
           const [fkSchema, fkTableName] = qNameSplit(fkTable);
           const filename = recase(this.options.caseFile, fkTableName, this.options.singularize);
-          str += `import ${this.options.lang === 'ts' ? '' : ''} { `;
-          str += Array.from(set.values()).sort().join(', ');
-          str += ` } from './${filename}${this.options.lang === 'ts' ? '' : '.js'}';\n`;
+          if (this.options.version == 'v6') {
+            str += 'import type { ';
+            str += Array.from(set.values()).sort().join(', ');
+          } else {
+            str += 'import { ';
+            const values = Array.from(set.values());
+            str += values.length > 0 ? values[0] : '';
+          }
+          str += ` } from './${filename}';\n`;
         });
       }
 
