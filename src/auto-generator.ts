@@ -130,7 +130,8 @@ export class AutoGenerator {
             str += Array.from(set.values()).sort().join(', ');
           } else {
             str += 'import { ';
-            str += Array.from(set.values()).at(0);
+            const values = Array.from(set.values());
+            str += values.length > 0 ? values[0] : '';
           }
           str += ` } from './${filename}';\n`;
         });

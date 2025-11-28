@@ -1,1 +1,1 @@
-module.exports = require('./lib/src/auto');
+module.exports = require('./lib/auto');
