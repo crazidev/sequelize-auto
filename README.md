@@ -69,6 +69,9 @@ Options:
 -n, --noWrite            Prevent writing the models to disk          [boolean]
 -s, --schema             Database schema from which to retrieve tables[string]
 -v, --views              Include database views in generated models  [boolean]
+--version                 Sequelize version: v6|v7
+                          v6 = Sequelize v6 (default)
+                          v7 = Sequelize v7 with decorator support    [string]
 -l, --lang               Language for Model output: es5|es6|esm|ts
                           es5 = ES5 CJS modules (default)
                           es6 = ES6 CJS modules
@@ -84,6 +87,30 @@ Options:
 ## Example
 
     sequelize-auto -o "./models" -d sequelize_auto_test -h localhost -u my_username -p 5432 -x my_password -e postgres
+
+## Sequelize v7 Support
+
+Sequelize-auto now supports Sequelize v7! Use the `--version` option to generate v7-compatible models:
+
+    sequelize-auto --version v7 -o "./models" -d sequelize_auto_test -h localhost -u my_username -p 5432 -x my_password -e postgres -l ts
+
+### Differences between v6 and v7:
+
+- **v6 (default)**: Uses `Model.init()` pattern with attribute objects
+- **v7**: Uses decorator-based models (TypeScript only) or `Model.init()` for JavaScript
+  - TypeScript models use decorators like `@Table`, `@Attribute`, `@PrimaryKey`, etc.
+  - Imports from `@sequelize/core` instead of `sequelize`
+  - New initialization patterns with `sequelize.addModels()` or `importModels()`
+
+### Component-Based Architecture
+
+The codebase has been refactored to use a component-based architecture with:
+- **Builders**: Construct structured model representations
+- **Processors**: Handle field attributes using the strategy pattern
+- **Renderers**: Convert structures to code strings
+- **Generators**: Orchestrate the build and render process
+
+This makes the codebase more maintainable and extensible.
 
 Produces a file/files such as `./models/User.js` which looks like:
 

@@ -19,6 +19,7 @@ import {
   TableData,
   TSField,
 } from './types';
+import { GeneratorFactory } from './generators/generator-factory';
 
 /** Generates text from each table in TableData */
 export class AutoGenerator {
@@ -103,6 +104,35 @@ export class AutoGenerator {
   }
 
   generateText() {
+    // Use new component-based architecture if version is specified
+    if (this.options.version) {
+      const generator = GeneratorFactory.create(this.dialect, {
+        ...this.options,
+        lang: this.options.lang,
+        caseModel: this.options.caseModel,
+        caseProp: this.options.caseProp,
+        caseFile: this.options.caseFile,
+        singularize: this.options.singularize,
+        skipFields: this.options.skipFields,
+        additional: this.options.additional,
+        noIndexes: this.options.noIndexes,
+        useDefine: this.options.useDefine,
+        spaces: this.options.spaces,
+        indentation: this.options.indentation,
+        version: this.options.version,
+      });
+
+      return generator.generateText(
+        this.tables,
+        this.foreignKeys,
+        this.relations,
+        this.indexes,
+        this.hasTriggerTables,
+        this.dialect
+      );
+    }
+
+    // Fallback to legacy implementation for backward compatibility
     const tableNames = _.keys(this.tables);
     const text: { [name: string]: string } = {};
 

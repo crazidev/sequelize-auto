@@ -5,7 +5,7 @@
         "syntax": "typescript",
         "tsx": false,
         "dynamicImport": true,
-        "decorators": false
+        "decorators": true
       },
       "transform": null,
       "target": "es2016",

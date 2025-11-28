@@ -4,6 +4,7 @@ import path from "path";
 import util from "util";
 import { FKSpec, TableData } from ".";
 import { AutoOptions, CaseFileOption, CaseOption, LangOption, makeIndent, makeTableName, pluralize, qNameSplit, recase, Relation } from "./types";
+import { InitGeneratorFactory } from "./writers/init-generator-factory";
 const mkdirp = require('mkdirp');
 
 /** Writes text into files from TableData.text, and writes init-models */
@@ -25,6 +26,7 @@ export class AutoWriter {
     useDefine?: boolean;
     spaces?: boolean;
     indentation?: number;
+    version?: 'v6' | 'v7';
   };
   constructor(tableData: TableData, options: AutoOptions) {
     this.tableText = tableData.text as { [name: string]: string };
@@ -61,7 +63,21 @@ export class AutoWriter {
 
     // write the init-models file
     if (!this.options.noInitModels) {
-      const initString = this.createInitString(tableNames, assoc, this.options.lang);
+      // Use new init generator factory
+      const version = this.options.version || 'v6';
+      const initGenerator = InitGeneratorFactory.create({
+        ...this.options,
+        version: version,
+      } as AutoOptions);
+      
+      const initString = initGenerator.generate(tableNames, assoc, {
+        lang: this.options.lang,
+        caseFile: this.options.caseFile,
+        caseModel: this.options.caseModel,
+        singularize: this.options.singularize,
+        space: this.space,
+      });
+      
       const initFilePath = path.join(this.options.directory, "init-models" + (isTypeScript ? '.ts' : '.js'));
       const writeFile = util.promisify(fs.writeFile);
       const initPromise = writeFile(path.resolve(initFilePath), initString);
@@ -70,6 +86,7 @@ export class AutoWriter {
 
     return Promise.all(promises);
   }
+  // Legacy method kept for backward compatibility
   private createInitString(tableNames: string[], assoc: string, lang?: string) {
     switch (lang) {
       case 'ts':
