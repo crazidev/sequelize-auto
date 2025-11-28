@@ -11,6 +11,8 @@
     "removeComments": false,
     "sourceMap": true,
     "target": "ES6",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "moduleResolution": "nodenext",
     "skipLibCheck": true,
     "typeRoots": [

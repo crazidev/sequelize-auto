@@ -32,7 +32,11 @@ describe(helpers.getTestDialectTeaser("sequelize-auto build"), function() {
       caseModel: isSnakeTables ? 'p' : undefined,
       caseProp: isSnakeTables ? 'p' : undefined,
       lang: 'esm',
-      version: "v6"
+      version: "v6",
+      dialectOptions: {
+        ssl: true,
+      }
+     
     }, testConfig[helpers.getTestDialect()], self.sequelize.config);
 
     var auto = new SequelizeAuto(self.sequelize.config.database, self.sequelize.config.username, self.sequelize.config.password, options);

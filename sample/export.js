@@ -1,16 +1,18 @@
+const { Sequelize } = require('sequelize');
 const SequelizeAuto = require('../index');
 
 // Edit your database settings in config.js
 const config = require('./config');
 
-var auto = new SequelizeAuto(config.dbname, config.user, config.pass, config.autoOptions);
+const sequelize = new Sequelize(
+  'postgresql://neondb_owner:6zXa0SRoOUuG@ep-white-night-a474995j.us-east-1.aws.neon.tech/sequelize?sslmode=require&channel_binding=require'
+);
 
-auto.run().then(data => {
+var auto = new SequelizeAuto(sequelize, config.user, config.pass, config.autoOptions);
+
+auto.run().then((data) => {
   const tableNames = Object.keys(data.tables);
-  console.log(tableNames);      // table list
+  console.log(tableNames); // table list
   // console.log(data.foreignKeys); // foreign key list
   // console.log(data.text)         // text of generated files
-  console.log(config.autoOptions);
 });
-
-

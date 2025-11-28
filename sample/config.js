@@ -13,8 +13,8 @@ const options = {
   spaces: true,
   noAlias: true,
   indentation: 2,
-  version: 'v6',
-  generateMigration: true
+  version: 'v7',
+  generateMigration: true,
 };
 
 // Edit the configuration below for your database dialect
@@ -53,12 +53,13 @@ const mysql = {
 // postgres
 /** @type {import('./config').Config} */
 const postgres = {
-  dbname: 'postgres',
-  user: 'postgres',
-  pass: '4663789',
+  dbname: 'sequelize',
+  host: 'ep-white-night-a474995j.us-east-1.aws.neon.tech',
+  user: 'neondb_owner',
+  pass: '6zXa0SRoOUuG',
   options: { dialect: 'postgres' },
-  autoOptions: { dialect: 'postgres', ...options },
+  autoOptions: { dialect: 'postgres', ssl: false, ...options },
 };
 
 // Change to export appropriate config for your database
-module.exports = mysql;
+module.exports = postgres;

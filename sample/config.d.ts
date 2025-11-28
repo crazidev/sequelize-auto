@@ -18,6 +18,7 @@ export interface AutoOptions extends Options {
 
 export interface Config {
   dbname: string;
+  host: string;
   user: string;
   pass: string;
   options: Options;

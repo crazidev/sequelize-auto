@@ -1,8 +1,8 @@
 const fs = require('fs');
 const { describe, before, after, it } = require('mocha');
 const { expect } = require('chai');
-const { AutoRelater } = require('../lib/auto-relater');
-const { SequelizeAuto } = require('../lib/auto');
+const { AutoRelater } = require('../lib/src/auto-relater');
+const { SequelizeAuto } = require('../lib/src/auto');
 const buildTableData = require('./tabledata').buildRelatedTableData;
 
 describe("sequelize-auto writer", function() {

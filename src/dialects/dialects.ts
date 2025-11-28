@@ -25,5 +25,4 @@ export const dialects: { [name in Dialect]: DialectOptions } = {
   db2: sqliteOptions,
   snowflake: sqliteOptions,
   oracle: sqliteOptions,
- 
 };
