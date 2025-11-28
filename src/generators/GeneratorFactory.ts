@@ -16,7 +16,8 @@ import {
 import { GeneratorContext, GeneratorOptions, IInitGenerator, IModelGenerator } from './IGenerator';
 import { V6InitGenerator, V7InitGenerator } from './InitGenerator';
 import { MigrationGenerator, V6MigrationGenerator, V7MigrationGenerator } from './MigrationGenerator';
-import { V6ModelGenerator, V7ModelGenerator } from './ModelGenerator';
+import { V6ModelGenerator } from './V6ModelGenerator';
+import { V7ModelGenerator } from './V7ModelGenerator';
 
 /**
  * Generator factory that creates the appropriate generators based on options.
